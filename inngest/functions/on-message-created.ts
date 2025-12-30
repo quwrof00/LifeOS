@@ -23,7 +23,7 @@ export const enrichMessage = inngest.createFunction(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'qwen/qwen3-30b-a3b-04-28:free',
+        model: 'qwen/qwen3-coder:free',
         messages: [
           {
             role: 'system',
