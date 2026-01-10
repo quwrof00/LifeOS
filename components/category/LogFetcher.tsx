@@ -55,15 +55,15 @@ export function LogFetcher() {
   }, {} as Record<string, ExtendedMessage[]>);
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-purple-900 via-indigo-800 to-blue-900 flex items-center justify-center p-6">
+    <div className="w-full flex justify-center p-6">
       <motion.div
         initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-        className="max-w-4xl w-full bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20"
+        className="max-w-4xl w-full glass-panel rounded-2xl p-8"
       >
-        <h1 className="text-3xl font-extrabold text-white mb-6 text-center drop-shadow-lg">
-          📖 Cosmic Journal 🌟
+        <h1 className="text-3xl font-bold text-white mb-6 text-center tracking-tight">
+          Captain&apos;s Log
         </h1>
 
         {loading && (
@@ -87,7 +87,7 @@ export function LogFetcher() {
                   d="M4 12a8 8 0 018-8v8H4z"
                 />
               </svg>
-              Loading Journal...
+              Retrieving Archives...
             </span>
           </p>
         )}
@@ -98,7 +98,7 @@ export function LogFetcher() {
             animate={{ opacity: 1 }}
             className="text-neon-red text-center font-medium mb-4"
           >
-            {error} 😕
+            {error}
           </motion.p>
         )}
 
@@ -108,48 +108,61 @@ export function LogFetcher() {
             animate={{ opacity: 1 }}
             className="text-gray-400 text-center font-medium"
           >
-            No journal entries yet. Start writing! ✍️
+            Log is empty. Submit your first entry.
           </motion.p>
         )}
 
         {Object.entries(groupedMessages).map(([date, msgs]) => (
-  <div key={date} className="mb-8">
-    <h2 className="text-xl font-semibold text-neon-blue mb-4 sticky top-0 bg-white/5 backdrop-blur-sm py-2 rounded-lg">
-      {date}
-    </h2>
-    <ul className="space-y-4">
-      {msgs.map((message) => (
-        <motion.li
-          key={message.id}
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="p-4 bg-gray-800/50 border border-dashed border-neon-blue/30 rounded-xl shadow-[0_0_10px_rgba(0,240,255,0.3)] hover:shadow-[0_0_15px_rgba(0,240,255,0.5)] transition-all duration-300 relative overflow-hidden"
-        >
-          <span className="absolute inset-0 bg-gradient-to-r from-neon-blue/20 to-neon-purple/20 opacity-0 hover:opacity-100 transition-opacity duration-300" />
-          {/* Delete Button */}
-          <DeleteButton
-            messageId={message.id}
-            className="absolute bottom-2 right-2 z-20"
-          />
-          <div className="relative z-10 flex flex-col sm:flex-row gap-4 pr-10 sm:pr-12">
-            <p className="text-white text-lg mb-2 flex-1">{message.content}</p>
-            <div className="flex items-center gap-4">
-              <p className="text-xs text-gray-400">
-                {new Date(message.createdAt).toLocaleTimeString('en-US', {
-                  hour: 'numeric',
-                  minute: 'numeric',
-                  hour12: true,
-                })}
-              </p>
-              <AnimatedEmoji mood={message.mood} />
-            </div>
+          <div key={date} className="mb-8 relative pl-6 border-l border-white/10 ml-2">
+
+            {/* Timeline Dot */}
+            <div className="absolute -left-[5px] top-3 w-2.5 h-2.5 bg-neon-blue rounded-full shadow-[0_0_8px_rgba(0,240,255,0.6)]" />
+
+            <h2 className="text-sm font-semibold text-neon-blue mb-4 uppercase tracking-wider backdrop-blur-sm py-1 sticky top-0 bg-transparent">
+              {date}
+            </h2>
+
+            <ul className="space-y-3">
+              {msgs.map((message) => (
+                <motion.li
+                  key={message.id}
+                  initial={prefersReducedMotion ? false : { opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="p-5 glass-panel border-white/5 bg-white/5 rounded-xl hover:border-neon-blue/30 transition-all duration-300 relative group"
+                >
+                  {/* Delete Button */}
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                    <DeleteButton messageId={message.id} />
+                  </div>
+
+                  <div className="relative z-10 flex flex-col gap-2">
+                    <p className="text-gray-200 text-base leading-relaxed">{message.content}</p>
+
+                    <div className="flex items-center justify-between mt-2 pt-3 border-t border-white/5">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 font-mono">
+                        <span>{new Date(message.createdAt).toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: 'numeric',
+                          hour12: true,
+                        })}</span>
+                      </div>
+
+                      {message.mood && (
+                        <div className="flex items-center gap-2 bg-white/5 px-2 py-1 rounded-md border border-white/5">
+                          <span className="text-[10px] text-gray-400 uppercase tracking-wide">Mood Status</span>
+                          <div className="scale-75 origin-right">
+                            <AnimatedEmoji mood={message.mood} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </motion.li>
+              ))}
+            </ul>
           </div>
-        </motion.li>
-      ))}
-    </ul>
-  </div>
-))}
+        ))}
       </motion.div>
     </div>
   );

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 type Profile = {
   name: string;
+  email?: string;
   image: string | null;
 };
 

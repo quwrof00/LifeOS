@@ -1,19 +1,5 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-:root {
-  --neon-blue: #00f0ff;
-  --neon-purple: #cc00ff;
-  --neon-green: #00ff85;
-  --neon-red: #ff4d4d;
-  --neon-yellow: #ffd700;
-}
-
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -21,15 +7,108 @@
   --font-mono: var(--font-geist-mono);
 }
 
+:root {
+  /* Premium Dark Base */
+  --background: #030712;
+  /* Deep void black/blue */
+  --foreground: #f8fafc;
+  /* Crisp white-blue */
+
+  /* Refined Neon (Less harsh, more glowing) */
+  --neon-blue: #22d3ee;
+  /* Cyan-400 */
+  --neon-purple: #c084fc;
+  /* Purple-400 */
+  --neon-green: #34d399;
+  /* Emerald-400 */
+  --neon-red: #f87171;
+  /* Red-400 */
+  --neon-yellow: #fcd34d;
+  /* Amber-300 */
+
+  /* Glass Utilities */
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(15, 23, 42, 0.6);
+  /* Slate-900 with opacity */
+  --glass-highlight: rgba(255, 255, 255, 0.03);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #030712;
+    --foreground: #f8fafc;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Landing Page Animations */
+.glow-pulse {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+.hex-pulse {
+  animation: hexPulse 4s ease-in-out infinite;
+}
+
+.scanline-bg {
+  background-image: linear-gradient(rgba(0, 240, 255, 0.08) 1px, transparent 1px);
+  background-size: 100% 8px;
+  animation: scanline 20s linear infinite, scanGlow 5s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+
+  0%,
+  100% {
+    filter: url(#glow);
+  }
+
+  50% {
+    filter: url(#glow) brightness(1.5);
+  }
+}
+
+@keyframes hexPulse {
+
+  0%,
+  100% {
+    stroke: #00f0ff;
+    stroke-opacity: 0.6;
+  }
+
+  50% {
+    stroke: #00ff85;
+    stroke-opacity: 0.9;
+  }
+}
+
+@keyframes scanline {
+  0% {
+    background-position: 0 0;
+  }
+
+  100% {
+    background-position: 0 100px;
+  }
+}
+
+@keyframes scanGlow {
+
+  0%,
+  100% {
+    opacity: 0.08;
+    background-image: linear-gradient(rgba(0, 240, 255, 0.08) 1px, transparent 1px);
+  }
+
+  50% {
+    opacity: 0.15;
+    background-image: linear-gradient(rgba(0, 255, 133, 0.15) 1px, transparent 1px);
+  }
 }

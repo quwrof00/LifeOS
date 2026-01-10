@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Message } from '@prisma/client';
 import DeleteButton from '../DeleteButton';
+import clsx from 'clsx';
 
 type MediaMessage = Message & {
   title?: string;
@@ -53,15 +54,15 @@ export default function MediaFetcher() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-purple-900 via-indigo-800 to-blue-900">
+    <div className="w-full flex justify-center p-6">
       <motion.div
         initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="max-w-4xl w-full bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20"
+        className="max-w-4xl w-full glass-panel rounded-2xl p-8"
       >
-        <h1 className="text-3xl font-extrabold text-white mb-8 text-center drop-shadow-lg">
-          🎬 Media Opinions 🍿
+        <h1 className="text-3xl font-bold text-white mb-8 text-center tracking-tight">
+          Media Opinions
         </h1>
 
         {loading && (
@@ -90,7 +91,7 @@ export default function MediaFetcher() {
                   className="opacity-75"
                 />
               </svg>
-              Loading opinions…
+              Accessing Archives...
             </span>
           </motion.p>
         )}
@@ -101,7 +102,7 @@ export default function MediaFetcher() {
             animate={{ opacity: 1 }}
             className="text-neon-red text-center font-medium"
           >
-            {error} 😕
+            {error}
           </motion.p>
         )}
 
@@ -111,67 +112,56 @@ export default function MediaFetcher() {
             animate={{ opacity: 1 }}
             className="text-gray-400 text-center font-medium"
           >
-            No opinions yet. Share your media takes! 🎥
+            No opinions found. Record your take.
           </motion.p>
         )}
 
         {!loading && !error && mediaOpinions.length > 0 && (
-  <ul className="space-y-4">
-    {mediaOpinions.map((op) => (
-      <motion.li
-        key={op.id}
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        whileHover={prefersReducedMotion ? {} : { scale: 1.03 }}
-        className="relative p-6 bg-gradient-to-br from-gray-800/30 to-gray-900/30 border border-neon-blue/40 rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.4)] hover:shadow-[0_0_20px_rgba(0,240,255,0.6)] overflow-hidden"
-      >
-        <span className="absolute inset-0 bg-gradient-to-r from-neon-blue/20 to-neon-purple/20 opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-xl" />
-        {/* Delete Button */}
-        <DeleteButton
-          messageId={op.id}
-          className="absolute bottom-2 right-2 z-20"
-        />
-        <div className="relative z-10 pr-10">
-          <div className="flex items-center gap-2 mb-3">
-            <svg
-              className="w-6 h-6 text-neon-yellow flex-shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-              />
-            </svg>
-            {op.boldness && (
-              <div className="flex items-center gap-2">
-                <span className={chipClasses(op.boldness)}>{op.boldness}</span>
-                {typeof op.boldnessConfidence === 'number' && (
-                  <span className="text-xs text-gray-400">
-                    {op.boldnessConfidence}% sure
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-          <p className="text-lg text-gray-100 mb-4 leading-relaxed">{op.content}</p>
-          {op.boldnessExplanation && (
-            <div className="bg-gray-800/50 p-3 rounded-lg mb-3">
-              <p className="text-sm text-gray-300 italic">{op.boldnessExplanation}</p>
-            </div>
-          )}
-          <p className="text-xs text-gray-400 text-right">
-            {new Date(op.createdAt).toLocaleDateString()}
-          </p>
-        </div>
-      </motion.li>
-    ))}
-  </ul>
-)}
+          <ul className="space-y-4">
+            {mediaOpinions.map((op) => (
+              <motion.li
+                key={op.id}
+                initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+                className="relative p-6 glass-panel border-white/5 bg-white/5 rounded-xl hover:border-neon-blue/30 transition-all duration-300 group"
+              >
+                {/* Delete Button */}
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                  <DeleteButton messageId={op.id} />
+                </div>
+
+                <div className="relative z-10 pr-6">
+                  <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <span className="text-2xl">🎬</span>
+                    {op.boldness && (
+                      <div className="flex items-center gap-2">
+                        <span className={clsx(chipClasses(op.boldness), "shadow-sm")}>{op.boldness}</span>
+                        {typeof op.boldnessConfidence === 'number' && (
+                          <span className="text-[10px] text-gray-500 font-mono bg-white/5 px-1.5 py-0.5 rounded border border-white/5">
+                            {op.boldnessConfidence}% CONFIDENCE
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="text-lg text-white font-medium mb-3 leading-relaxed">{op.content}</p>
+
+                  {op.boldnessExplanation && (
+                    <div className="bg-white/5 p-4 rounded-lg mb-3 border border-white/5">
+                      <p className="text-sm text-gray-400 italic">&apos;{op.boldnessExplanation}&apos;</p>
+                    </div>
+                  )}
+
+                  <p className="text-[10px] text-gray-600 font-mono mt-4 uppercase tracking-wider">
+                    Recorded: {new Date(op.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </motion.li>
+            ))}
+          </ul>
+        )}
       </motion.div>
     </div>
   );

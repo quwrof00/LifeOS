@@ -11,82 +11,11 @@ export default function Page() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShouldAnimate(true);
-    }, 0); 
+    }, 0);
     return () => clearTimeout(timer);
   }, []);
 
-  const renderContent = () => (
-    <>
-      {/* Glowing nodes */}
-      <motion.div
-        className="absolute w-3 h-3 bg-neon-blue rounded-full"
-        animate={shouldAnimate ? { opacity: [0.3, 1, 0.3], scale: [1, 1.2, 1] } : {}}
-        transition={shouldAnimate ? { duration: 2, repeat: Infinity, repeatType: 'reverse' } : {}}
-        style={{ top: '20%', left: '30%' }}
-      />
-      <motion.div
-        className="absolute w-2 h-2 bg-neon-purple rounded-full"
-        animate={shouldAnimate ? { opacity: [0.3, 1, 0.3], scale: [1, 1.2, 1] } : {}}
-        transition={shouldAnimate ? { duration: 2.5, repeat: Infinity, repeatType: 'reverse' } : {}}
-        style={{ top: '60%', right: '25%' }}
-      />
 
-      {/* Main content */}
-      {shouldAnimate ? (
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
-          className="text-center z-10"
-        >
-          <h1 className="text-6xl sm:text-8xl font-extrabold text-neon-blue mb-6 drop-shadow-[0_0_15px_rgba(0,240,255,0.7)] tracking-tight">
-            LifeOS
-          </h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="text-xl sm:text-2xl text-gray-300 mb-10 max-w-lg mx-auto"
-          >
-            Your ultimate system to track, plan, and master your life.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <Link href="/write">
-              <motion.button
-                whileHover={{ scale: 1.05, boxShadow: '0 0 25px rgba(0, 240, 255, 0.8)' }}
-                whileTap={{ scale: 0.95 }}
-                className="px-10 py-5 bg-neon-blue/20 text-neon-blue text-2xl font-bold rounded-2xl border-2 border-neon-blue/50 backdrop-blur-lg shadow-xl hover:bg-neon-blue/30 transition-all duration-300"
-              >
-                Launch Your Life 🚀
-              </motion.button>
-            </Link>
-          </motion.div>
-        </motion.div>
-      ) : (
-        <div className="text-center z-10">
-          <h1 className="text-6xl sm:text-8xl font-extrabold text-neon-blue mb-6 drop-shadow-[0_0_15px_rgba(0,240,255,0.7)] tracking-tight">
-            LifeOS
-          </h1>
-          <p className="text-xl sm:text-2xl text-gray-300 mb-10 max-w-lg mx-auto">
-            Your ultimate system to track, plan, and master your life.
-          </p>
-          <div>
-            <Link href="/write">
-              <button
-                className="px-10 py-5 bg-neon-blue/20 text-neon-blue text-2xl font-bold rounded-2xl border-2 border-neon-blue/50 backdrop-blur-lg shadow-xl hover:bg-neon-blue/30 transition-all duration-300"
-              >
-                Note Your Life 🚀
-              </button>
-            </Link>
-          </div>
-        </div>
-      )}
-    </>
-  );
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-indigo-900 to-blue-900 flex flex-col items-center justify-center p-6 relative overflow-hidden">
@@ -143,43 +72,54 @@ export default function Page() {
       {/* Subtle scanlines */}
       <div className="absolute inset-0 opacity-08 pointer-events-none scanline-bg glow-pulse"></div>
 
-      {renderContent()}
+      {/* Glowing nodes */}
+      <motion.div
+        className="absolute w-3 h-3 bg-neon-blue rounded-full"
+        animate={shouldAnimate ? { opacity: [0.3, 1, 0.3], scale: [1, 1.2, 1] } : {}}
+        transition={shouldAnimate ? { duration: 2, repeat: Infinity, repeatType: 'reverse' } : {}}
+        style={{ top: '20%', left: '30%' }}
+      />
+      <motion.div
+        className="absolute w-2 h-2 bg-neon-purple rounded-full"
+        animate={shouldAnimate ? { opacity: [0.3, 1, 0.3], scale: [1, 1.2, 1] } : {}}
+        transition={shouldAnimate ? { duration: 2.5, repeat: Infinity, repeatType: 'reverse' } : {}}
+        style={{ top: '60%', right: '25%' }}
+      />
 
-      <style jsx global>{`
-        :root {
-          --neon-blue: #00f0ff;
-          --neon-purple: #cc00ff;
-          --neon-green: #00ff85;
-          --neon-red: #ff4d4d;
-        }
-        .glow-pulse {
-          animation: glowPulse 3s ease-in-out infinite;
-        }
-        .hex-pulse {
-          animation: hexPulse 4s ease-in-out infinite;
-        }
-        .scanline-bg {
-          background-image: linear-gradient(rgba(0, 240, 255, 0.08) 1px, transparent 1px);
-          background-size: 100% 8px;
-          animation: scanline 20s linear infinite, scanGlow 5s ease-in-out infinite;
-        }
-        @keyframes glowPulse {
-          0%, 100% { filter: url(#glow); }
-          50% { filter: url(#glow) brightness(1.5); }
-        }
-        @keyframes hexPulse {
-          0%, 100% { stroke: #00f0ff; stroke-opacity: 0.6; }
-          50% { stroke: #00ff85; stroke-opacity: 0.9; }
-        }
-        @keyframes scanline {
-          0% { background-position: 0 0; }
-          100% { background-position: 0 100px; }
-        }
-        @keyframes scanGlow {
-          0%, 100% { opacity: 0.08; background-image: linear-gradient(rgba(0, 240, 255, 0.08) 1px, transparent 1px); }
-          50% { opacity: 0.15; background-image: linear-gradient(rgba(0, 255, 133, 0.15) 1px, transparent 1px); }
-        }
-      `}</style>
+      {/* Main content */}
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+        transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
+        className="text-center z-10"
+      >
+        <h1 className="text-6xl sm:text-8xl font-extrabold text-neon-blue mb-6 drop-shadow-[0_0_15px_rgba(0,240,255,0.7)] tracking-tight">
+          LifeOS
+        </h1>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.8, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
+          className="text-xl sm:text-2xl text-gray-300 mb-10 max-w-lg mx-auto"
+        >
+          Your ultimate system to track, plan, and master your life.
+        </motion.p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.6, delay: 0.5, ease: [0.4, 0, 0.2, 1] }}
+        >
+          <Link href="/write">
+            <motion.button
+              whileHover={{ scale: 1.05, boxShadow: '0 0 25px rgba(0, 240, 255, 0.8)' }}
+              whileTap={{ scale: 0.95 }}
+              className="px-10 py-5 bg-neon-blue/20 text-neon-blue text-2xl font-bold rounded-2xl border-2 border-neon-blue/50 backdrop-blur-lg shadow-xl hover:bg-neon-blue/30 transition-all duration-300"
+            >
+              Note Your Life
+            </motion.button>
+          </Link>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

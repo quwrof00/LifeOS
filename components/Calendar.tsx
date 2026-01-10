@@ -19,7 +19,7 @@ export default function Calendar() {
 
     setSelected(date);
     setIsLoading(true);
-    
+
     try {
       await router.push(`/timeline/${format(date, 'yyyy-MM-dd')}`);
     } catch (error) {
@@ -51,7 +51,7 @@ export default function Calendar() {
       )}
 
       <h1 className="text-white text-sm font-bold mb-3 text-center">🗓️ By Date</h1>
-      
+
       <DayPicker
         mode="single"
         selected={selected}
@@ -63,9 +63,9 @@ export default function Calendar() {
           selected: 'rdp-selected',
           today: 'rdp-today',
         }}
-        aria-labels={{
-          navNext: 'Next month',
-          navPrevious: 'Previous month',
+        labels={{
+          labelNext: () => 'Next Month',
+          labelPrevious: () => 'Previous Month',
         }}
       />
     </div>

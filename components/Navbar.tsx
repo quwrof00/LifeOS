@@ -1,36 +1,28 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
+import { useState, useRef, useEffect } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import { useProfileStore } from '@/stores/userStore';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, User, LogOut, Menu, X, ChevronDown, Command } from 'lucide-react';
 
 export default function Navbar() {
-  const { status } = useSession(); 
-  const pathname = usePathname();
+  const { status } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isWriteLoading, setIsWriteLoading] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { profile, fetchProfile } = useProfileStore();
 
-  // Load profile on mount
   useEffect(() => {
     if (status === 'authenticated') fetchProfile();
-    if (status === 'unauthenticated') useProfileStore.setState({ profile: null });
   }, [status, fetchProfile]);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
     };
@@ -38,218 +30,168 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Handle write link click with loading state
-  const handleWriteClick = () => {
-    setIsWriteLoading(true);
-    setTimeout(() => setIsWriteLoading(false), 1000); // Simulate navigation
-  };
-
-  const logout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await signOut();
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
-
-  const renderWriteLink = () => (
-    <Link
-      href="/write"
-      onClick={handleWriteClick}
-      className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-neon-blue/50 text-neon-blue hover:scale-105 hover:shadow-[0_0_10px_rgba(0,240,255,0.5)] transition-all duration-300"
-      aria-label="Write new message"
-    >
-      {isWriteLoading ? (
-        <motion.div
-          className="w-5 h-5 border-2 border-neon-blue border-t-transparent rounded-full shadow-[0_0_10px_rgba(0,240,255,0.5)]"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-        />
-      ) : (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M17 3l4 4-12 12H3v-6L15 1z" />
-          <path d="M15 1l6 6" />
-        </svg>
-      )}
-    </Link>
-  );
-
-  const renderProfileDropdown = () => (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setIsDropdownOpen((prev) => !prev)}
-        className="flex items-center focus:outline-none"
-        aria-label="Profile menu"
-      >
-        {isDropdownOpen && isLoggingOut ? (
-          <motion.div
-            className="w-10 h-10 border-2 border-neon-blue border-t-transparent rounded-full shadow-[0_0_10px_rgba(0,240,255,0.5)]"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          />
-        ) : (
-          <img
-            src={profile?.image || undefined}
-            alt="Profile"
-            className="w-10 h-10 rounded-full border-2 border-neon-blue/50 object-cover shadow-md hover:scale-105 transition duration-300"
-          />
-        )}
-      </button>
-      
-      {isDropdownOpen && (
-        <div className="absolute top-12 right-0 w-40 bg-white/10 border border-neon-blue/30 rounded-xl shadow-lg p-2 backdrop-blur-lg z-50">
-          <Link 
-            href="/profile" 
-            className="block px-4 py-2 text-sm text-neon-blue font-semibold hover:bg-neon-blue/20 rounded-lg transition"
-          >
-            {profile?.name || 'Profile'}
-          </Link>
-          <button
-            onClick={logout}
-            className="w-full text-left px-4 py-2 text-sm rounded-lg hover:bg-neon-blue/20 text-neon-blue font-bold transition flex items-center justify-between"
-            disabled={isLoggingOut}
-          >
-            {isLoggingOut ? (
-              <>
-                Logging Out
-                <motion.div
-                  className="w-4 h-4 border-2 border-neon-blue border-t-transparent rounded-full ml-2"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                />
-              </>
-            ) : 'Log Out'}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-
-  const renderMobileLogoutButton = () => (
-    <button
-      onClick={logout}
-      className="px-4 py-2 bg-neon-blue/20 text-neon-blue text-sm font-bold rounded-lg border border-neon-blue/50 hover:bg-neon-blue/30 transition flex items-center justify-center gap-2"
-      disabled={isLoggingOut}
-    >
-      {isLoggingOut ? (
-        <>
-          Logging Out
-          <motion.div
-            className="w-4 h-4 border-2 border-neon-blue border-t-transparent rounded-full"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          />
-        </>
-      ) : 'Log Out'}
-    </button>
-  );
-
   return (
-    <nav className="fixed top-0 left-0 w-full z-30 backdrop-blur-lg bg-white/10 border-b border-neon-blue/40 shadow-md">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        {/* Logo */}
-        <Link
-          href="/"
-          className="text-3xl font-extrabold tracking-tight text-neon-blue drop-shadow-[0_0_10px_rgba(0,240,255,0.7)]"
-        >
-          LifeOS
+    <nav className="fixed top-0 left-0 w-full z-50 h-16 bg-background/80 backdrop-blur-md border-b border-white/5">
+      <div className="max-w-7xl mx-auto px-4 h-full flex justify-between items-center">
+        {/* Brand */}
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="w-8 h-8 bg-gradient-to-br from-neon-blue to-neon-purple rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(34,211,238,0.3)] group-hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] transition-all">
+            <Command className="text-white w-5 h-5" />
+          </div>
+          <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all">
+            LifeOS
+          </span>
         </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center space-x-6">
-          {profile && renderWriteLink()}
+        {/* Desktop Actions */}
+        <div className="hidden md:flex items-center gap-4">
           {profile ? (
-            renderProfileDropdown()
-          ) : (
             <>
+              {/* Quick Action */}
               <Link
-                href="/login"
-                className={`text-sm font-bold text-neon-blue hover:underline transition ${
-                  pathname === '/login' ? 'underline' : ''
-                }`}
+                href="/write"
+                className="flex items-center gap-2 px-4 py-2 bg-neon-blue/10 hover:bg-neon-blue/20 text-neon-blue border border-neon-blue/20 rounded-full transition-all duration-300 group"
               >
+                <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+                <span className="text-sm font-semibold">New Entry</span>
+              </Link>
+
+              {/* Profile Dropdown */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center gap-3 pl-3 pr-2 py-1.5 rounded-full hover:bg-white/5 transition-colors border border-transparent hover:border-white/5"
+                >
+                  <div className="text-right hidden lg:block">
+                    <p className="text-xs font-medium text-white">{profile.name}</p>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-wider">Operative</p>
+                  </div>
+                  <div className="relative">
+                    <Image
+                      src={profile.image || 'https://api.dicebear.com/7.x/shapes/svg?seed=LifeOS'}
+                      alt="Profile"
+                      width={36}
+                      height={36}
+                      className="w-9 h-9 rounded-full object-cover border border-white/10"
+                    />
+                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-background rounded-full"></div>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-14 right-0 w-56 bg-[#0B0F19] border border-white/10 rounded-2xl shadow-2xl p-2 overflow-hidden"
+                    >
+                      <div className="px-3 py-2 border-b border-white/5 mb-2">
+                        <p className="text-xs text-gray-400">Signed in as</p>
+                        <p className="text-sm font-semibold text-white truncate">{profile.email || 'User'}</p>
+                      </div>
+
+                      <Link
+                        href="/profile"
+                        className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <User className="w-4 h-4" />
+                        Access Profile
+                      </Link>
+
+                      <button
+                        onClick={() => signOut()}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-xl transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Disconnect
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-4">
+              <Link href="/login" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
                 Log In
               </Link>
               <Link
                 href="/register"
-                className="px-4 py-2 rounded-lg bg-neon-blue/20 border border-neon-blue/50 text-neon-blue text-sm font-bold hover:bg-neon-blue/30 transition-all duration-300"
+                className="px-5 py-2 bg-white text-black text-sm font-bold rounded-full hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.2)]"
               >
-                Register
+                Get Started
               </Link>
-            </>
+            </div>
           )}
         </div>
 
-        {/* Mobile Menu Toggle */}
+        {/* Mobile Toggle */}
         <button
-          className="md:hidden text-neon-blue focus:outline-none"
-          onClick={() => setIsMenuOpen((prev) => !prev)}
-          aria-label="Toggle menu"
+          className="md:hidden text-gray-300"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
-          <svg
-            className={`w-6 h-6 transition-transform duration-300 ${isMenuOpen ? 'rotate-90' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            {isMenuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-            )}
-          </svg>
+          {isMenuOpen ? <X /> : <Menu />}
         </button>
       </div>
 
       {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden px-6 py-4 bg-white/10 backdrop-blur-lg border-t border-neon-blue/30">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-3">{renderWriteLink()}</div>
-            {profile ? (
-              <>
-                <div className="flex items-center gap-3">
-                  <img
-                    src={profile.image || '/user-placeholder.png'}
-                    alt="Profile"
-                    className="w-10 h-10 rounded-full border-2 border-neon-blue/50 object-cover shadow-md"
-                  />
-                  <span className="text-sm font-semibold text-neon-blue">
-                    {profile.name || 'Profile'}
-                  </span>
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="md:hidden bg-background border-b border-white/10 overflow-hidden"
+          >
+            <div className="p-4 space-y-4">
+              {profile ? (
+                <>
+                  <Link
+                    href="/write"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-neon-blue/10 text-neon-blue rounded-xl font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Plus className="w-4 h-4" />
+                    New Entry
+                  </Link>
+                  <Link
+                    href="/profile"
+                    className="block w-full py-3 text-center text-gray-300 hover:bg-white/5 rounded-xl transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    My Profile
+                  </Link>
+                  <button
+                    onClick={() => signOut()}
+                    className="block w-full py-3 text-center text-red-400 hover:bg-red-400/10 rounded-xl transition-colors"
+                  >
+                    Log Out
+                  </button>
+                </>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  <Link
+                    href="/login"
+                    className="block w-full py-3 text-center text-gray-300 bg-white/5 rounded-xl"
+                  >
+                    Log In
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="block w-full py-3 text-center text-black bg-white rounded-xl font-bold"
+                  >
+                    Register
+                  </Link>
                 </div>
-                {renderMobileLogoutButton()}
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className={`text-sm font-bold text-neon-blue hover:underline transition ${
-                    pathname === '/login' ? 'underline' : ''
-                  }`}
-                >
-                  Log In
-                </Link>
-                <Link
-                  href="/register"
-                  className="px-4 py-2 bg-neon-blue/20 text-neon-blue text-sm font-bold rounded-lg border border-neon-blue/50 hover:bg-neon-blue/30 transition"
-                >
-                  Register
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }

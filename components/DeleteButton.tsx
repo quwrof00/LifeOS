@@ -2,7 +2,7 @@
 
 type DeleteButtonProps = {
   messageId: string;
-  className: string;
+  className?: string;
 };
 
 export default function DeleteButton({ messageId, className = "" }: DeleteButtonProps) {
