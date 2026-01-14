@@ -21,34 +21,34 @@ export default function Page() {
       alert("Confirm password should be same as password");
       return;
     }
-    
+
     try {
       const response = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username,
-        email,
-        password,
-      }),
-    });
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+        }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      alert(data.error || "Registration failed");
-      return;
+      if (!response.ok) {
+        alert(data.error || "Registration failed");
+        return;
+      }
+
+      alert(data.message || "User registered successfully! Please check your email.");
+      redirect('/login');
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert("Something went wrong. Please try again later.");
     }
-
-    alert("User registered successfully!");
-    redirect('/write');
-  } catch (error) {
-    console.error("Registration error:", error);
-    alert("Something went wrong. Please try again later.");
-  }
-};
+  };
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-indigo-900 to-blue-900 flex flex-col items-center justify-center p-6 relative overflow-hidden">
@@ -148,35 +148,35 @@ export default function Page() {
                 className="w-full px-4 py-3 bg-white/10 border border-neon-blue/50 rounded-lg text-gray-300 placeholder-gray-500 focus:outline-none focus:border-neon-blue/70"
               />
             </div>
-            <button 
-  onClick={handleRegister} 
-  className="w-full px-10 py-5 bg-neon-blue/20 text-neon-blue text-xl font-bold rounded-2xl border-2 border-neon-blue/50 backdrop-blur-lg shadow-xl hover:bg-neon-blue/30 transition-all duration-300"
->
-  Register
-</button>
+            <button
+              onClick={handleRegister}
+              className="w-full px-10 py-5 bg-neon-blue/20 text-neon-blue text-xl font-bold rounded-2xl border-2 border-neon-blue/50 backdrop-blur-lg shadow-xl hover:bg-neon-blue/30 transition-all duration-300"
+            >
+              Register
+            </button>
 
-{/* Divider with "OR" text */}
-<div className="relative my-4">
-  <div className="absolute inset-0 flex items-center">
-    <div className="w-full border-t border-neon-blue/30"></div>
-  </div>
-  <div className="relative flex justify-center">
-    <span className="px-2 bg-white/10 text-neon-blue/80 text-sm backdrop-blur-sm">OR</span>
-  </div>
-</div>
+            {/* Divider with "OR" text */}
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-neon-blue/30"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="px-2 bg-white/10 text-neon-blue/80 text-sm backdrop-blur-sm">OR</span>
+              </div>
+            </div>
 
-<button 
-  onClick={() => signIn("google", { callbackUrl: "/write" })} 
-  className="w-full px-10 py-5 bg-white/10 text-white text-xl font-bold rounded-2xl border-2 border-white/50 backdrop-blur-lg shadow-xl hover:bg-white/20 transition-all duration-300 flex items-center justify-center gap-3"
->
-  <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-      fill="#FFFFFF"
-    />
-  </svg>
-  Continue with Google
-</button>
+            <button
+              onClick={() => signIn("google", { callbackUrl: "/write" })}
+              className="w-full px-10 py-5 bg-white/10 text-white text-xl font-bold rounded-2xl border-2 border-white/50 backdrop-blur-lg shadow-xl hover:bg-white/20 transition-all duration-300 flex items-center justify-center gap-3"
+            >
+              <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                  fill="#FFFFFF"
+                />
+              </svg>
+              Continue with Google
+            </button>
             <p className="text-gray-300 text-sm">
               Already have an account?{' '}
               <Link href="/login" className="text-neon-blue hover:underline">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Message } from '@prisma/client';
 import { motion, useReducedMotion } from 'framer-motion';
 import clsx from 'clsx';
@@ -141,8 +141,8 @@ export default function TaskFetcher() {
     }
   }, []);
 
-  const debouncedSaveLabels = useCallback(
-    debounce((messageId: string, labels: string[]) => {
+  const debouncedSaveLabels = useMemo(
+    () => debounce((messageId: string, labels: string[]) => {
       handleTaskUpdate(messageId, 'labels', labels);
     }, 1000),
     [handleTaskUpdate]

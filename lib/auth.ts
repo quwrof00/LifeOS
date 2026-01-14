@@ -24,6 +24,7 @@ const baseConfig: Omit<NextAuthOptions, "adapter"> = {
           });
           if (!user) throw new Error("No user found with this email");
           if (!user.password) throw new Error("User has no password set");
+          if (!user.emailVerified) throw new Error("Email not verified. Please check your inbox.");
 
           const isValid = await bcrypt.compare(credentials.password, user.password);
           if (!isValid) throw new Error("Invalid password");
