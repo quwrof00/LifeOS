@@ -101,7 +101,7 @@ export const enrichMessage = inngest.createFunction(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'openrouter/cypher-alpha:free',
+          model: 'mistralai/mistral-7b-instruct:free',
           temperature: 0.3,
           max_tokens: 256,
           messages: [
