@@ -66,7 +66,7 @@ export const enrichMessage = inngest.createFunction(
       throw new Error('Invalid AI response format');
     }
 
-    const category = parsed.category?.toUpperCase() || 'OTHER';
+    const category = parsed.category?.trim().toUpperCase() || 'OTHER';
     const mood = parsed.mood?.toUpperCase() || 'NEUTRAL';
     const summary = parsed.summary || '';
 
@@ -94,20 +94,25 @@ export const enrichMessage = inngest.createFunction(
       ]);
     }
     else if (category === 'MEDIA') {
-      const hotRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'mistralai/mistral-7b-instruct:free',
-          temperature: 0.3,
-          max_tokens: 256,
-          messages: [
-            {
-              role: 'system',
-              content: `You are a media analyst.
+      let boldness = null;
+      let explanation = null;
+      let confidence = null;
+
+      try {
+        const hotRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'mistralai/mistral-7b-instruct:free',
+            temperature: 0.3,
+            max_tokens: 256,
+            messages: [
+              {
+                role: 'system',
+                content: `You are a media analyst.
 Return ONLY valid JSON with keys:
   boldness (wrt public op) - "Cold Take", "Mild Take", "Hot Take", or "Nuclear Take"
   explanation  - one short sentence
@@ -115,35 +120,29 @@ Return ONLY valid JSON with keys:
 
 Example:
 {"boldness":"Hot Take","explanation":"The opinion sharply disagrees with mainstream consensus.","confidence":88}`,
-            },
-            { role: 'user', content },
-          ],
-        }),
-      });
+              },
+              { role: 'user', content },
+            ],
+          }),
+        });
 
-      if (!hotRes.ok) {
-        console.error('OpenRouter error:', await hotRes.text());
-        throw new Error('Hot‑take classification failed (HTTP)');
+        if (hotRes.ok) {
+          const hotJson = await hotRes.json();
+          const raw = hotJson.choices?.[0]?.message?.content?.trim();
+          if (raw) {
+            const clean = raw.replace(/```json|```/g, '').trim();
+            const hotTake = JSON.parse(clean);
+            boldness = hotTake.boldness;
+            explanation = hotTake.explanation;
+            confidence = hotTake.confidence;
+          }
+        } else {
+          console.error('Hot take API failed:', await hotRes.text());
+        }
+      } catch (e) {
+        console.error('Hot take analysis failed:', e);
       }
 
-      const hotJson = await hotRes.json();
-      console.log("Hot-take raw JSON:", JSON.stringify(hotJson, null, 2));
-      const raw = hotJson.choices?.[0]?.message?.content?.trim();
-      if (!raw) {
-        throw new Error('Hot‑take classification failed (no content)');
-      }
-
-      const clean = raw.replace(/```json|```/g, '').trim();
-
-      let hotTake;
-      try {
-        hotTake = JSON.parse(clean);
-      } catch {
-        console.error('Malformed JSON from model:', clean);
-        throw new Error('Hot‑take classification failed (parse)');
-      }
-
-      const { boldness, explanation, confidence } = hotTake;
       await prisma.media.upsert({
         where: { messageId },
         create: {

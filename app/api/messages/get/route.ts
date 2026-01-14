@@ -25,17 +25,17 @@ export async function GET(req: NextRequest) {
     if (type.toUpperCase() === 'MEDIA') {
       const mediaRows = await prisma.media.findMany({
         where: {
-          Message: { userId: session.user.id },
+          Message: {
+            userId: session.user.id,
+          }
         },
         include: {
-          Message: true,
-        },
-        orderBy: {
-          Message: { createdAt: 'desc' },
-        },
-      });
+          Message: true
+        }
+      })
+      console.log(mediaRows);
 
-      const messages = mediaRows.map((m) => ({
+      const messages = mediaRows?.map((m) => ({
         ...m.Message,                     // id, content, createdAt, etc.
         boldness: m.boldness,
         boldnessExplanation: m.boldnessExplanation,
