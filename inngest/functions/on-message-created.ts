@@ -23,7 +23,7 @@ export const enrichMessage = inngest.createFunction(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'qwen/qwen3-coder:free',
+        model: 'mistralai/devstral-2512:free',
         messages: [
           {
             role: 'system',
@@ -41,13 +41,13 @@ export const enrichMessage = inngest.createFunction(
         ],
         temperature: 0.3,
         max_tokens: 256,
-        response_format: {type: "json_object"}
+        response_format: { type: "json_object" }
       }),
     });
 
     const json = await aiRes.json();
     console.log(json);
-    
+
 
     if (!aiRes.ok || !json.choices?.[0]?.message?.content) {
       throw new Error('AI classification failed');
@@ -57,11 +57,11 @@ export const enrichMessage = inngest.createFunction(
     try {
       const raw = json.choices[0].message.content || '{}';
       console.log(raw);
-      
+
       const cleaned = raw.trim().replace(/^```json|```$/g, '').trim();
       parsed = JSON.parse(cleaned);
       console.log(parsed);
-      
+
     } catch {
       throw new Error('Invalid AI response format');
     }
@@ -92,21 +92,22 @@ export const enrichMessage = inngest.createFunction(
           },
         },
       ]);
-    } 
+    }
     else if (category === 'MEDIA') {
       const hotRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
-        headers: {Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-      model: 'openrouter/cypher-alpha:free',       
-      temperature: 0.3,
-      max_tokens: 256,
-      messages: [
-        {
-          role: 'system',
-          content: `You are a media analyst.
+        headers: {
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'openrouter/cypher-alpha:free',
+          temperature: 0.3,
+          max_tokens: 256,
+          messages: [
+            {
+              role: 'system',
+              content: `You are a media analyst.
 Return ONLY valid JSON with keys:
   boldness (wrt public op) - "Cold Take", "Mild Take", "Hot Take", or "Nuclear Take"
   explanation  - one short sentence
@@ -114,49 +115,49 @@ Return ONLY valid JSON with keys:
 
 Example:
 {"boldness":"Hot Take","explanation":"The opinion sharply disagrees with mainstream consensus.","confidence":88}`,
+            },
+            { role: 'user', content },
+          ],
+        }),
+      });
+
+      if (!hotRes.ok) {
+        console.error('OpenRouter error:', await hotRes.text());
+        throw new Error('Hot‑take classification failed (HTTP)');
+      }
+
+      const hotJson = await hotRes.json();
+      console.log("Hot-take raw JSON:", JSON.stringify(hotJson, null, 2));
+      const raw = hotJson.choices?.[0]?.message?.content?.trim();
+      if (!raw) {
+        throw new Error('Hot‑take classification failed (no content)');
+      }
+
+      const clean = raw.replace(/```json|```/g, '').trim();
+
+      let hotTake;
+      try {
+        hotTake = JSON.parse(clean);
+      } catch {
+        console.error('Malformed JSON from model:', clean);
+        throw new Error('Hot‑take classification failed (parse)');
+      }
+
+      const { boldness, explanation, confidence } = hotTake;
+      await prisma.media.upsert({
+        where: { messageId },
+        create: {
+          messageId,
+          boldness: boldness || null,
+          boldnessExplanation: explanation || null,
+          boldnessConfidence: confidence || null,
         },
-        { role: 'user', content },                
-      ],
-    }),
-  });
-
-  if (!hotRes.ok) {
-      console.error('OpenRouter error:', await hotRes.text());
-      throw new Error('Hot‑take classification failed (HTTP)');
-    }
-
-  const hotJson = await hotRes.json();
-  console.log("Hot-take raw JSON:", JSON.stringify(hotJson, null, 2));
-    const raw = hotJson.choices?.[0]?.message?.content?.trim();
-    if (!raw) {
-      throw new Error('Hot‑take classification failed (no content)');
-    }
-
-    const clean = raw.replace(/```json|```/g, '').trim();
-
-    let hotTake;
-    try {
-      hotTake = JSON.parse(clean);
-    } catch {
-      console.error('Malformed JSON from model:', clean);
-      throw new Error('Hot‑take classification failed (parse)');
-    }
-
-    const { boldness, explanation, confidence } = hotTake;
-  await prisma.media.upsert({
-  where: { messageId },
-  create: {
-    messageId,
-    boldness: boldness || null,
-    boldnessExplanation: explanation || null,
-    boldnessConfidence: confidence || null,
-  },
-  update: {
-    boldness: boldness || null,
-    boldnessExplanation: explanation || null,
-    boldnessConfidence: confidence || null,
-  },
-});
+        update: {
+          boldness: boldness || null,
+          boldnessExplanation: explanation || null,
+          boldnessConfidence: confidence || null,
+        },
+      });
     }
 
     return { enriched: true };
